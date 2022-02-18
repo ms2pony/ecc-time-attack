@@ -1,6 +1,6 @@
 #include "ecc.h"
 #include <stdio.h>
-
+#include <fcntl.h>
 #include <string.h>
 
 #define NUM_ECC_DIGITS (ECC_BYTES / 8)
@@ -1259,12 +1259,13 @@ int ecdsa_sign(const uint8_t p_privateKey[ECC_BYTES], const uint8_t p_hash[ECC_B
             continue;
         }
 
-        FILE *nonce_file = fopen("/home/tam/github/easy-ecc/t1/out/nonces.log", "a");
+        FILE *nonce_file = fopen("../out/temp/nonces.log", "a");
         fprintf(nonce_file, "0x");
-        fprintf(nonce_file, "%lx", k[3]);
-        fprintf(nonce_file, "%lx", k[2]);
-        fprintf(nonce_file, "%lx", k[1]);
-        fprintf(nonce_file, "%lx\n", k[0]);
+        for (int i = NUM_ECC_DIGITS - 1; i >= 0; i--)
+        {
+            fprintf(nonce_file, "%08lx", k[i]);
+        }
+        fprintf(nonce_file, "\n");
 
         fclose(nonce_file);
 
