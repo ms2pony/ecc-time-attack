@@ -1,9 +1,6 @@
 # 签名r,s ；哈希值m ；消耗时间t；对应的临时随机数k；k的为数：len
 # 一共六项
 
-from unittest.main import main
-
-
 def getData():
     """
     生成data.log文件

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
+#include <convert.h>
 
 #define NUM_ECC_DIGITS (ECC_BYTES / 8)
 #define MAX_TRIES 16
@@ -1259,7 +1260,61 @@ int ecdsa_sign(const uint8_t p_privateKey[ECC_BYTES], const uint8_t p_hash[ECC_B
             continue;
         }
 
-        FILE *nonce_file = fopen("../out/temp/nonces.log", "a");
+        if (vli_cmp(curve_n, k) != 1)
+        {
+            vli_sub(k, k, curve_n);
+        }
+
+        /* tmp = k * G */
+        EccPoint_mult(&p, &curve_G, k, NULL);
+
+        /* r = x1 (mod n) */
+        if (vli_cmp(curve_n, p.x) != 1)
+        {
+            vli_sub(p.x, p.x, curve_n);
+        }
+    } while (vli_isZero(p.x));
+
+    //记录k
+    FILE *nonce_file = fopen("../out/temp/nonces.log", "a");
+
+    // fprintf(nonce_file, "0x");
+    // for (int i = NUM_ECC_DIGITS - 1; i >= 0; i--)
+    // {
+    //     fprintf(nonce_file, "%08lx", k[i]);
+    // }
+
+    char str[60] = {0};
+    array2Num_l_64(str, k, 2);
+    fprintf(nonce_file, "%s", str);
+    fprintf(nonce_file, "\n");
+
+    fclose(nonce_file);
+
+    ecc_native2bytes(p_signature, p.x);
+    ecc_bytes2native(l_tmp, p_privateKey);
+    vli_modMult(l_s, p.x, l_tmp, curve_n); /* s = r*d */
+    ecc_bytes2native(l_tmp, p_hash);
+    vli_modAdd(l_s, l_tmp, l_s, curve_n); /* s = e + r*d */
+    vli_modInv(k, k, curve_n);            /* k = 1 / k */
+    vli_modMult(l_s, l_s, k, curve_n);    /* s = (e + r*d) / k */
+    ecc_native2bytes(p_signature + ECC_BYTES, l_s);
+
+    return 1;
+}
+
+int ecdsa_sign1(const uint8_t p_privateKey[ECC_BYTES], const uint8_t p_hash[ECC_BYTES], uint8_t p_signature[ECC_BYTES * 2])
+{
+    uint64_t k[NUM_ECC_DIGITS] = {0x9ff29189e175b6b2, 0xbd8aa9a9e9bdde};
+    // uint64_t k[NUM_ECC_DIGITS] = {0x2172f210e143982c, 0x46671a64922b026e};
+    uint64_t l_tmp[NUM_ECC_DIGITS];
+    uint64_t l_s[NUM_ECC_DIGITS];
+    EccPoint p;
+    unsigned l_tries = 0;
+
+    do
+    {
+        FILE *nonce_file = fopen("nonces.log", "a");
         fprintf(nonce_file, "0x");
         for (int i = NUM_ECC_DIGITS - 1; i >= 0; i--)
         {
@@ -1284,14 +1339,19 @@ int ecdsa_sign(const uint8_t p_privateKey[ECC_BYTES], const uint8_t p_hash[ECC_B
         }
     } while (vli_isZero(p.x));
 
-    ecc_native2bytes(p_signature, p.x);
+    printf("k:\t%lx\t%lx\n", k[1], k[0]);
 
+    ecc_native2bytes(p_signature, p.x);
+    printf("r:\t%lx\t%lx\n", p.x[1], p.x[0]);
     ecc_bytes2native(l_tmp, p_privateKey);
+    printf("d:\t%lx\t%lx\n", l_tmp[1], l_tmp[0]);
     vli_modMult(l_s, p.x, l_tmp, curve_n); /* s = r*d */
     ecc_bytes2native(l_tmp, p_hash);
+    printf("m:\t%lx\t%lx\n", l_tmp[1], l_tmp[0]);
     vli_modAdd(l_s, l_tmp, l_s, curve_n); /* s = e + r*d */
     vli_modInv(k, k, curve_n);            /* k = 1 / k */
     vli_modMult(l_s, l_s, k, curve_n);    /* s = (e + r*d) / k */
+    printf("s:\t%lx\t%lx\n", l_s[1], l_s[0]);
     ecc_native2bytes(p_signature + ECC_BYTES, l_s);
 
     return 1;

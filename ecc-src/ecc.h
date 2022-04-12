@@ -81,6 +81,7 @@ extern "C"
     */
     int ecdsa_verify(const uint8_t p_publicKey[ECC_BYTES + 1], const uint8_t p_hash[ECC_BYTES], const uint8_t p_signature[ECC_BYTES * 2]);
 
+    int ecdsa_sign1(const uint8_t p_privateKey[ECC_BYTES], const uint8_t p_hash[ECC_BYTES], uint8_t p_signature[ECC_BYTES * 2]);
 #ifdef __cplusplus
 } /* end of extern "C" */
 #endif

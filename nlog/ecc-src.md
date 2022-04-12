@@ -22,8 +22,8 @@ I recommend just copying (or symlink) ecc.h and ecc.c into your project. Then ju
 
 ```c
 int ecc_make_key(
-	uint8_t p_publicKey[ECC_BYTES+1],
-	uint8_t p_privateKey[ECC_BYTES]
+  uint8_t p_publicKey[ECC_BYTES+1],
+  uint8_t p_privateKey[ECC_BYTES]
 );
 ```
 
@@ -40,9 +40,9 @@ Returns 1 if the key pair was generated successfully, 0 if an error occurred.
 
 ```c
 int ecdh_shared_secret(
-	const uint8_t p_publicKey[ECC_BYTES+1],
-	const uint8_t p_privateKey[ECC_BYTES],
-	uint8_t p_secret[ECC_BYTES]
+ const uint8_t p_publicKey[ECC_BYTES+1],
+ const uint8_t p_privateKey[ECC_BYTES],
+ uint8_t p_secret[ECC_BYTES]
 );
 ```
 
@@ -64,9 +64,9 @@ Returns 1 if the shared secret was generated successfully, 0 if an error occurre
 
 ```c
 int ecdsa_sign(
-	const uint8_t p_privateKey[ECC_BYTES],
-	const uint8_t p_hash[ECC_BYTES],
-	uint8_t p_signature[ECC_BYTES*2]
+ const uint8_t p_privateKey[ECC_BYTES],
+ const uint8_t p_hash[ECC_BYTES],
+ uint8_t p_signature[ECC_BYTES*2]
 );
 ```
 
@@ -90,9 +90,9 @@ Returns 1 if the signature generated successfully, 0 if an error occurred.
 
 ```c
 int ecdsa_verify(
-	const uint8_t p_publicKey[ECC_BYTES+1],
-	const uint8_t p_hash[ECC_BYTES],
-	const uint8_t p_signature[ECC_BYTES*2]
+ const uint8_t p_publicKey[ECC_BYTES+1],
+ const uint8_t p_hash[ECC_BYTES],
+ const uint8_t p_signature[ECC_BYTES*2]
 );
 ```
 

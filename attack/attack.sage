@@ -1,9 +1,12 @@
 # Config
-lattice_size = 35   # number of signatures
-trick = 2^128 / 2^9 # 7 leading bits
+lattice_size = 60   # number of signatures
+# trick = 2 ^ 128 / 2 ^ 12  # 7 leading bits
+trick = 1  # 7 leading bits
+modulo = 0xFFFFFFFE0000000075A30D1B9038A115  # 该ecdsa的参数n
 
 # Get data
-with open(r"F:\iii\ii\i\workStudation\Studation\CTF\lattic_attack\demo2\small_nonce.txt", "r") as f:
+# with open(r"/home/tam/github/ecc-time-attack/out/small_nonce.txt", "r") as f:
+with open(r"/home/tam/github/ecc-time-attack/out/small_cycle.txt", "r") as f:
     content = f.readlines()
 f.close()
 digests = []
@@ -15,16 +18,15 @@ for item in content[:lattice_size]:
     digests.append(int(item['m']))
     signatures.append((int(item['r']), int(item['s'])))
 
-modulo = 340282366762482138443322565580356624661
-
 # Building Equations
-nn = len(digests)
+nn = lattice_size
+
 # getting rid of the first equation
 r0_inv = inverse_mod(signatures[0][0], modulo)
 s0 = signatures[0][1]
 m0 = digests[0]
 AA = [-1]
-BB = [0]
+BB = [0]  # B_{0}=0
 for ii in range(1, nn):
     mm = digests[ii]
     rr = signatures[ii][0]
@@ -36,18 +38,22 @@ for ii in range(1, nn):
     AA.append(AA_i.lift())
     BB.append(BB_i.lift())
 
+
 # Embedding Technique (CVP->SVP)
 lattice = Matrix(ZZ, nn + 1)
+# print(lattice[0])
+
 
 for ii in range(nn):
     lattice[ii, ii] = modulo
     lattice[0, ii] = AA[ii]
 BB.append(trick)
 
+# print(lattice[0])
 lattice[nn] = vector(BB)
 lattice = lattice.BKZ()
 
-print ("found a key")
+# print("found a key")
 # get rid of (..., 1)
 vec = list(lattice[0])
 vec.pop()
@@ -62,4 +68,3 @@ nonce = solution[0]
 
 key = Mod((ss * nonce - mm) * inverse_mod(rr, modulo), modulo)
 print(hex(key))
-print(key)
